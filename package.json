@@ -1,0 +1,15 @@
+{
+  "name":"Jarallax",
+  "file_name":"jarallax",
+  "author":"Jacko Hoogeveen",
+  "title": "Jarallax",
+  "description": "The parallax scrolling opensource Javascript library",
+  "version":"0.2.3",
+  "website": "http://jarallax.com",
+  "destination":"bin/",
+  "license":
+  {
+    "type":"Dual licensed under the MIT or GPL Version 3 licenses.",
+    "url":"http://jarallax.com/license.html"
+  }
+}

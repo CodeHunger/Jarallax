@@ -1,0 +1,419 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+      "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <link rel="stylesheet" href="lib/qunit.css" type="text/css"/>
+    <script src="http://code.jquery.com/jquery-latest.js"> </script>
+    <script type="text/javascript" src="lib/qunit.js"></script>
+    <script type="text/javascript" src="bin/jarallax.js"></script>
+    <script type="text/javascript">
+     $(document).ready(function(){
+        jarallax = new Jarallax('none');
+        
+        module("Alpha tests");
+        
+        test("JarallaxObject - Progress", function()
+        {
+           expect(5);
+           jarallax.setProgress(1);
+           equal(jarallax.progress,1);
+           jarallax.setProgress(0);
+           equal(jarallax.progress,0);
+           jarallax.setProgress(0.54326);
+           equal(jarallax.progress,0.54326);
+           jarallax.setProgress(2.4);
+           equal(jarallax.progress,1);
+           jarallax.setProgress(-54);
+           equal(jarallax.progress,0);
+        });
+        
+        test("JarallaxObject - Selection", function()
+        {
+           expect(9);
+           jarallax.setDefault("#obj1",{marginTop:"10px"});
+           equal($("#obj1").css("marginTop"),"10px");
+           
+           jarallax.setDefault("#obj2",{opacity:"0.5",marginBottom:"10px"});
+           equal($("#obj2").css("marginBottom"),"10px");
+           
+           jarallax.setDefault(".a",{marginBottom:"20px"});
+           notEqual($("#obj1").css("marginBottom"),"20px", "obj1");
+           equal($("#obj2").css("marginBottom"),"20px");
+           equal($("#obj3").css("marginBottom"),"20px");
+           notEqual($("#obj4").css("marginBottom"),"20px");
+           equal($("#obj5").css("marginBottom"),"20px");
+           
+           jarallax.setDefault(".b",{marginBottom:"30px"});
+           equal($("#obj4").css("marginBottom"),"30px");
+           equal($("#obj5").css("marginBottom"),"30px");
+           
+           jarallax.clearAnimations();
+           jarallax.clearDefaults();
+        });
+        
+        test("JarallaxObject - Animation basics", function(){
+          expect(10);
+          
+          jarallax.addAnimation("#obj1", [{progress:"0%",marginBottom:"50px"}, {progress:"100%",marginBottom:"100px"}]);
+          jarallax.addAnimation("#obj2", [{progress:"0%",marginBottom:"10px"}, {progress:"50%"}]);
+          jarallax.setDefault("#obj2",{marginBottom:"30px"});
+          equal(jarallax.animations.length,2);
+          
+          jarallax.setProgress(0);
+          equal($("#obj1").css("marginBottom"),"50px");
+          equal($("#obj2").css("marginBottom"),"10px");
+          
+          jarallax.setProgress(0.25);
+          equal(parseInt($("#obj1").css("marginBottom")),62);
+          
+          jarallax.setProgress(0.5);
+          equal($("#obj1").css("marginBottom"),"75px");
+          equal($("#obj2").css("marginBottom"),"10px");
+          
+          jarallax.setProgress(0.6);
+          equal($("#obj2").css("marginBottom"),"30px");
+          
+          
+          jarallax.clearAnimations();
+          equal(jarallax.animations.length,0);
+          
+          equal(jarallax.defaultValues.length,1);
+          
+          jarallax.clearDefaults();
+          equal(jarallax.defaultValues.length,0);
+        });
+        
+        test("Library - Easing library", function(){
+          expect(15);
+          
+          equal(Jarallax.EASING["linear"](0,0,1,1),0);
+          equal(Jarallax.EASING["linear"](0.5,0,1,1),0.5);
+          equal(Jarallax.EASING["linear"](1,0,1,1),1);
+          equal(Jarallax.EASING["linear"](5,50,100,10),100);
+          equal(Jarallax.EASING["linear"](75,100,200,100),250);
+          
+          equal(Jarallax.EASING["easeIn"](0,0,1,1,2),0);
+          equal(Jarallax.EASING["easeIn"](0.5,0,1,1,2),0.25);
+          equal(Jarallax.EASING["easeIn"](1,0,1,1,2),1);
+          equal(Jarallax.EASING["easeIn"](5,50,100,10,2),100 * 0.25 + 50);
+          equal(Jarallax.EASING["easeIn"](70,100,200,100,2),200 * 0.49 + 100);
+          
+          equal(Jarallax.EASING["easeOut"](0,0,1,1,2),0);
+          equal(Jarallax.EASING["easeOut"](0.5,0,1,1,2),0.75);
+          equal(Jarallax.EASING["easeOut"](1,0,1,1,2),1);
+          equal(Jarallax.EASING["easeOut"](5,50,100,10,2),100 * 0.75 + 50);
+          equal(Jarallax.EASING["easeOut"](70,100,200,100,2),200 * 0.91 + 100);
+        });
+        
+        test("Exceptions - basic exseptions", function(){
+          //expect(1);
+          //raises(Jarallax.IsValues());
+        });
+        
+        
+        
+        test("JarallaxObject - Animation easing", function(){
+          expect(1);
+          jarallax.addAnimation("#obj5", [{progress:"0%",marginBottom:"0px",style:{easing:"easeOut",power:2}}, {progress:"100%",marginBottom:"100px"}]);
+          jarallax.setProgress(0.70);
+          equal($("#obj5").css("marginBottom"),"91px");
+          jarallax.clearAnimations();
+          jarallax.setProgress(0);
+        });
+        
+        module("0.2.1");
+        
+        module("0.2.2");
+        
+        test("JarallaxObject - Animation cloning", function(){
+          expect(5);
+          var animation = jarallax.addAnimation("#obj1", [{progress:"0%",marginBottom:"0px"}, {progress:"100%",marginBottom:"100px"}]);
+          jarallax.cloneAnimation('#obj2',{marginBottom:'/2'}, animation);
+          jarallax.cloneAnimation('#obj3',{marginBottom:'+10'}, animation);
+          jarallax.cloneAnimation('#obj4',{marginBottom:'-20'}, animation);
+          jarallax.cloneAnimation('#obj5',{marginBottom:'*2'}, animation);
+          
+          jarallax.setProgress(0.50);
+          equal($("#obj1").css("marginBottom"),"50px");
+          equal($("#obj2").css("marginBottom"),"25px");
+          equal($("#obj3").css("marginBottom"),"60px");
+          equal($("#obj4").css("marginBottom"),"30px");
+          equal($("#obj5").css("marginBottom"),"100px");
+          jarallax.clearAnimations();
+        });
+        
+        module("0.2.3");
+        
+        test("JarallaxObject - Counter", function(){
+          expect(25);
+          jarallax.addCounter({selector:'#obj1'});
+                               
+          jarallax.addCounter({selector:'#obj2',
+                               startNumber:0,
+                               endNumber:100,
+                               startProgress:'50%',
+                               endProgress:'100%'});
+                               
+          jarallax.addCounter({selector:'#obj3',
+                               startNumber:0,
+                               endNumber:100,
+                               decimals:2});
+                               
+          jarallax.addCounter({selector:'#obj4',
+                               startNumber:0,
+                               endNumber:10000,
+                               stepSize:100});
+                               
+          jarallax.addCounter({selector:'#obj5',
+                               startNumber:0,
+                               endNumber:1,
+                               stepSize:0.25});
+          
+          ok(true, jarallax.addCounter);
+          ok(true, JarallaxCounter);
+            
+          jarallax.setProgress(0);
+          equal($("#obj1").html(),"0");
+          jarallax.setProgress(0.5);
+          equal($("#obj1").html(),"50");
+          jarallax.setProgress(1);
+          equal($("#obj1").html(),"100");
+          
+          jarallax.setProgress(0);
+          equal($("#obj2").html(),"0");
+          jarallax.setProgress(0.5);
+          equal($("#obj2").html(),"0");
+          jarallax.setProgress(0.75);
+          equal($("#obj2").html(),"50");
+          jarallax.setProgress(1);
+          equal($("#obj2").html(),"100");
+          
+          jarallax.setProgress(0);
+          equal($("#obj3").html(),"0.00");
+          jarallax.setProgress(0.333);
+          equal($("#obj3").html(),"33.30");
+          jarallax.setProgress(0.1337);
+          equal($("#obj3").html(),"13.37");
+          jarallax.setProgress(1);
+          equal($("#obj3").html(),"100.00");
+          
+          jarallax.setProgress(0);
+          equal($("#obj4").html(),"0");
+          jarallax.setProgress(0.01);
+          equal($("#obj4").html(),"100");
+          jarallax.setProgress(0.005);
+          equal($("#obj4").html(),"100");
+          jarallax.setProgress(0.004);
+          equal($("#obj4").html(),"0");
+          jarallax.setProgress(0.995);
+          equal($("#obj4").html(),"10000");
+          jarallax.setProgress(0.994);
+          equal($("#obj4").html(),"9900");
+          
+          jarallax.setProgress(0);
+          equal($("#obj5").html(),"0.00");
+          jarallax.setProgress(1);
+          equal($("#obj5").html(),"1.00");
+          jarallax.setProgress(0.13);
+          equal($("#obj5").html(),"0.25");
+          jarallax.setProgress(0.12);
+          equal($("#obj5").html(),"0.00");
+          jarallax.setProgress(0.88);
+          equal($("#obj5").html(),"1.00");
+          jarallax.setProgress(0.87);
+          equal($("#obj5").html(),"0.75");
+          
+          jarallax.clearAnimations();
+        });
+        
+        test("JarallaxObject - Lazy animation", function() {
+          expect(3);
+          $('#obj1, #obj2, #obj3').css('marginBottom', '100px');
+          jarallax.addAnimation("#obj2", {marginBottom:"200px"});
+          jarallax.addAnimation("#obj1", {progress: '50%', marginBottom:"200px"});
+          jarallax.addAnimation("#obj3", {progressStart: '50%', progressEnd: '100%', marginBottom:"300px"});
+          
+          jarallax.setProgress(0.5);
+          equal($("#obj2").css('marginBottom'),'150px');
+          equal($("#obj1").css('marginBottom'),'200px');
+          
+          jarallax.setProgress(0.75);
+          equal($("#obj3").css('marginBottom'),'200px');
+          jarallax.clearAnimations();
+        });
+        
+        module("Controllers");
+        
+        test("JarallaxObject - Scroll controller", function() {
+          expect(4);
+          
+          var controller = new ControllerScroll(false, 200)
+          var data = {scope:controller, y:100};
+          jarallax.addController(controller, true);
+          controller.onScroll({data:data});
+          equal(jarallax.progress,'0.5');
+          
+          data.y = 200;
+          controller.onScroll({data:data});
+          equal(jarallax.progress,'1');
+          
+          data.y = 0;
+          controller.onScroll({data:data});
+          equal(jarallax.progress,'0');
+          
+          data.y = 200;
+          controller.deactivate();
+          controller.onScroll({data:data});
+          equal(jarallax.progress,'0');
+          jarallax.clearControllers();
+          controller = undefined;
+        });
+        
+        test("JarallaxObject - Keyboard controller", function() {
+          expect(7);
+          jarallax.setProgress(0);
+          var controller = new ControllerKeyboard();
+          var data = {scope:controller};
+          jarallax.addController(controller, true);
+          controller.keyDown({data:data, keyCode:40});
+          controller.keyUp({data:data, keyCode:40});
+          equal(jarallax.progress,0.01);
+          
+          controller.keyDown({data:data, keyCode:40});
+          controller.keyDown({data:data, keyCode:40});
+          controller.keyUp({data:data, keyCode:40});
+          equal(jarallax.progress,0.01 + 0.01);
+          
+          controller.keyDown({data:data, keyCode:38});
+          controller.keyUp({data:data, keyCode:38});
+          equal(jarallax.progress, 0.01 + 0.01 - 0.01);
+          
+          jarallax.setProgress(1);
+          controller.keyDown({data:data, keyCode:40});
+          controller.keyUp({data:data, keyCode:40});
+          equal(jarallax.progress, 1);
+          
+          jarallax.setProgress(0);
+          controller.keyDown({data:data, keyCode:38});
+          controller.keyUp({data:data, keyCode:38});
+          equal(jarallax.progress, 0);
+          
+          
+          controller.deactivate();
+          controller.keyDown({data:data, keyCode:40});
+          controller.keyUp({data:data, keyCode:40});
+          equal(jarallax.progress, 0);
+          jarallax.clearControllers();
+          
+          var keys = {20:0.1, 11:-0.5}
+          jarallax.clearControllers();
+          
+          controller = new ControllerKeyboard(keys);
+          var data = {scope:controller};
+          jarallax.addController(controller, true);
+          controller.keyDown({data:data, keyCode:20});
+          controller.keyUp({data:data, keyCode:20});
+          controller.keyDown({data:data, keyCode:20});
+          controller.keyUp({data:data, keyCode:20});
+          controller.keyDown({data:data, keyCode:20});
+          controller.keyUp({data:data, keyCode:20});
+          controller.keyDown({data:data, keyCode:20});
+          controller.keyUp({data:data, keyCode:20});
+          controller.keyDown({data:data, keyCode:20});
+          controller.keyUp({data:data, keyCode:20});
+          controller.keyDown({data:data, keyCode:20});
+          controller.keyUp({data:data, keyCode:20});
+          controller.keyDown({data:data, keyCode:11});
+          controller.keyUp({data:data, keyCode:11});
+          equal(jarallax.progress, 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 - 0.5);
+          jarallax.clearControllers();
+        });
+        
+        test("JarallaxObject - Time controller", function() {
+          expect(11);
+          
+          var controller = new ControllerTime(0.1, 200);
+          var data = {scope:controller};
+          jarallax.setProgress(0);
+          jarallax.addController(controller, true);
+          
+          controller.onInterval(data);
+          equal(jarallax.progress, 0.1);
+          
+          controller.onInterval(data);
+          equal(jarallax.progress,0.1 + 0.1);
+          
+          jarallax.setProgress(1);
+          equal(controller.progress, 1);
+          
+          equal(controller.isActive, true);
+          controller.onInterval(data);
+          equal(controller.progress, 1);
+          equal(controller.isActive, false);
+          
+          jarallax.clearControllers();
+          
+          var controller = new ControllerTime(0.1, 200, ControllerTime.TYPES.LOOP);
+          var data = {scope:controller};
+          jarallax.addController(controller, true);
+          jarallax.setProgress(1);
+          controller.onInterval(data);
+          equal(jarallax.progress, 0);
+          equal(controller.isActive, true);
+          jarallax.clearControllers();
+          
+          var controller = new ControllerTime(0.2, 200, ControllerTime.TYPES.BOUNCE);
+          var data = {scope:controller};
+          jarallax.addController(controller, true);
+          jarallax.setProgress(1);
+          controller.onInterval(data);
+          equal(jarallax.progress, 1 - 0.2);
+          equal(controller.isActive, true);
+          equal(controller.playForward, false);
+          controller.deactivate(jarallax);
+          jarallax.clearControllers();
+        });
+        
+        test("JarallaxObject - Mobile controller", function() {
+          expect(10);
+          var controller = new ControllerMobile(false, 1000);
+          var data = {scope:controller};
+          
+          jarallax.setProgress(0);
+          jarallax.addController(controller, true);
+          
+          equal(controller.previousY, undefined);
+          equal(jarallax.progress, 0);
+          controller.onTouchMove({data:data, clientY: 100}, true);
+          equal(controller.previousY, 100);
+          equal(jarallax.progress, 0);
+          controller.onTouchMove({data:data, clientY: 200}, true);
+          equal(controller.y, 100);
+          equal(jarallax.progress, 0.1);
+          controller.onTouchMove({data:data, clientY: 300}, true);
+          equal(controller.y, 200);
+          equal(jarallax.progress, 0.2);
+          
+          controller.onTouchEnd();
+          equal(controller.previousY, undefined);
+          controller.onTouchMove({data:data, clientY: 200}, true);
+          controller.onTouchMove({data:data, clientY: 300}, true);
+          equal(jarallax.progress, 0.3);
+          jarallax.clearControllers();
+        });  
+      });
+    </script>
+  </head>
+  <body>
+    <span id="obj1"></span>
+    <span id="obj2" class="a"></span>
+    <span id="obj3" class="a"></span>
+    <span id="obj4" class="b"></span>
+    <span id="obj5" class="a b"></span>
+    <h1 id="qunit-header">QUnit example</h1>
+    <h2 id="qunit-banner"></h2>
+    <h2 id="qunit-userAgent"></h2>
+    <ol id="qunit-tests">
+    </ol>
+  </body>
+</html>
