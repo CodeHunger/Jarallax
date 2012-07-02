@@ -28,13 +28,13 @@ ControllerKeyboard.prototype.keyDown = function(event) {
   var controller = event.data.scope;
   
   if (controller.isActive) {
-    for(var key in scope.keys) {
+    for(var key in controller.keys) {
       if(key == event.keyCode) {
-        if(scope.keysState[key] !== true || scope.repetitiveInput) {
-          scope.jarallax.setProgress(scope.jarallax.progress + scope.keys[key]);
+        if(controller.keysState[key] !== true || controller.repetitiveInput) {
+          controller.jarallax.setProgress(controller.jarallax.progress + controller.keys[key]);
         }
-        scope.keysState[key] = true;
-        if(scope.preventDefault) {
+        controller.keysState[key] = true;
+        if(controller.preventDefault) {
           event.preventDefault(); 
         }
       }
@@ -44,10 +44,10 @@ ControllerKeyboard.prototype.keyDown = function(event) {
 
 ControllerKeyboard.prototype.keyUp = function(event) {
   if (this.isActive) {
-    var scope = event.data.scope;
-    for(var key in scope.keys) {
+    var controller = event.data.scope;
+    for(var key in controller.keys) {
       if(key == event.keyCode) {
-        scope.keysState[key] = false;
+        controller.keysState[key] = false;
       }
     }
   }
