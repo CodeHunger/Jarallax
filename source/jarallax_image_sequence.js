@@ -13,7 +13,7 @@ JarallaxImageSequence.BuilQeue = function(base_name, file_extension, amount, lea
       id = '0' + id;
     }
     
-    console.log()
+    console.log('id');
   }
 }
 
