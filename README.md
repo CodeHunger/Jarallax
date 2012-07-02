@@ -9,7 +9,7 @@ In the spirit of open source software development, Jarallax always encourages co
 What you need to build your own Jarallax
 --------------------------------------
 
-In order to build Jarallax, you need to have Node.js/npm latest, GNU make 0.3 or later, and git 1.7 or later.
+In order to build Jarallax, you need to have Node.js/npm latest, Grunt.js and git 1.7 or later.
 (Earlier versions might work OK, but are not tested.)
 
 Windows users have two options:
