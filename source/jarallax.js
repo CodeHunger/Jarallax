@@ -162,7 +162,7 @@ Jarallax.prototype.setDefault = function (selector, values) {
   
   if (JarallaxTools.isValues(values))
   {
-    var newDefault = new JaralaxObject(selector, values);
+    var newDefault = new JarallaxObject(selector, values);
     newDefault.activate();
     this.defaultValues.push(newDefault);
   }

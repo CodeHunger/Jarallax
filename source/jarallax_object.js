@@ -2,12 +2,12 @@
 // Jarallax object class ///////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-JaralaxObject = function (selector, values) {
+JarallaxObject = function (selector, values) {
   this.selector = selector;
   this.values = values;
 };
 
-JaralaxObject.prototype.activate = function (position) {
+JarallaxObject.prototype.activate = function (position) {
   for (var i in this.values) {
     $(this.selector).css(i ,this.values[i]);
   }
