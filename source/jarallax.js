@@ -11,6 +11,7 @@ var Jarallax = function (controller) {
   this.animations = [];
   this.defaultValues = [];
   this.progress = 0.0;
+  this.prev_progress = 0.0;
   this.controllers = [];
   this.maxProgress = 1;
   this.timer = undefined;
@@ -57,34 +58,31 @@ Jarallax.prototype.setProgress = function (progress, isWeak) {
   } else if (progress < 0) {
     progress = 0;
   }
+  this.prev_progress = this.progress;
   this.progress = progress;
-  
-  
-  
-  if (this.allowWeakProgress || !weak) {
-    this.previousTime = new Date();
-    
-    this.currentTime = new Date();
+  if(this.prev_progress !== progress) {
+    if (this.allowWeakProgress || !weak) {
+      this.previousTime = new Date();
+      this.currentTime = new Date();
 
-    var weak = isWeak || false;
-  
-    for (var defaultValue in this.defaultValues) {
-      this.defaultValues[defaultValue].activate(this.progress);
-    }
+      var weak = isWeak || false;
     
-    for (var animation in this.animations) {
-      this.animations[animation].activate(this.progress);
+      for (var defaultValue in this.defaultValues) {
+        this.defaultValues[defaultValue].activate(this.progress);
+      }
+      
+      for (var animation in this.animations) {
+        this.animations[animation].activate(this.progress);
+      }
+      
+      for (var controller in this.controllers) {
+        this.controllers[controller].update(this.progress);
+      }
+      
+      this.currentTime = new Date();
+      this.stepSize = Math.max(this.currentTime - this.previousTime, this.stepSize);
     }
-    
-    for (var controller in this.controllers) {
-      this.controllers[controller].update(this.progress);
-    }
-    
-    this.currentTime = new Date();
-    this.stepSize = Math.max(this.currentTime - this.previousTime, this.stepSize);
   }
-  
-  
 };
 
 Jarallax.prototype.clearAnimations = function() {

@@ -53,6 +53,10 @@ JarallaxAnimation.prototype.activate = function (progress) {
             var result =  Jarallax.EASING[style.easing](currentTime, 
                 startValue , changeInValue, duration, style.power);
             
+            if(units == 'px'){
+              result = parseInt(result, 10);
+            }
+            
             if(units !== '.'){
               result+= units;
             }
