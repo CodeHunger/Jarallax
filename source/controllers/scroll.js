@@ -36,18 +36,11 @@ ControllerScroll.prototype.onScroll = function(event) {
     if(!controller.jarallax.jumping_allowed) {
       controller.jarallax.clearSmooth(controller.jarallax);
     }
-
-    //console.log('preventing default');
-    //event.preventDefault();
-    //return false;
   }
-
-
 
   if (controller.isActive) {
     var y = event.data.y || controller.target.scrollTop();
     var progress = y/controller.scrollSpace;
-
 
     if(!controller.smoothing){
       controller.jarallax.setProgress(progress, true);

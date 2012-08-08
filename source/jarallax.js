@@ -61,37 +61,12 @@ Jarallax.prototype.setProgress = function (progress, isWeak) {
   }else{
     progress = Math.round(progress * 1000) / 1000;
   }
-<<<<<<< HEAD
-  this.prev_progress = this.progress;
-  this.progress = progress;
-  if(this.prev_progress !== progress) {
-    if (this.allowWeakProgress || !weak) {
-      this.previousTime = new Date();
-      this.currentTime = new Date();
-
-      var weak = isWeak || false;
-    
-      for (var defaultValue in this.defaultValues) {
-        this.defaultValues[defaultValue].activate(this.progress);
-      }
-      
-      for (var animation in this.animations) {
-        this.animations[animation].activate(this.progress);
-      }
-      
-      for (var controller in this.controllers) {
-        this.controllers[controller].update(this.progress);
-      }
-      
-=======
 
   if(this.progress != progress){
     this.progress = progress;
     if (this.allowWeakProgress || !weak) {
       this.previousTime = new Date();
-
       this.currentTime = new Date();
-
       var weak = isWeak || false;
 
       for (var defaultValue in this.defaultValues) {
@@ -106,7 +81,6 @@ Jarallax.prototype.setProgress = function (progress, isWeak) {
         this.controllers[controller].update(this.progress);
       }
 
->>>>>>> adba2cf... Fixed firefox broken scroll bar. Fixed bug which only implements default values
       this.currentTime = new Date();
       this.stepSize = Math.max(this.currentTime - this.previousTime, this.stepSize);
     }
@@ -338,14 +312,6 @@ Jarallax.prototype.cloneAnimation = function (selector, adittionalValues, animat
   return newAnimations;
 };
 
-<<<<<<< HEAD
-=======
-Jarallax.prototype.addImageSequence = function(container, imageName, leadingNumbers, callback){
-  //TODO
-  return false;
-};
-
->>>>>>> adba2cf... Fixed firefox broken scroll bar. Fixed bug which only implements default values
 ////////////////////////////////////////////////////////////////////////////////
 // Jarallax static methods /////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
