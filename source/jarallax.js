@@ -17,6 +17,7 @@ var Jarallax = function (controller) {
   this.allowWeakProgress = true;
   this.frameRate = this.FPS;
   this.stepSize = 0;
+  this.jumping = false;
 
   if (controller === undefined) {
     if($.browser.iDevice){
@@ -41,7 +42,7 @@ var Jarallax = function (controller) {
   for (var i in this.controllers) {
     this.controllers[i].activate(this);
   }
-  
+
   this.frameChart = [];
   for(var j = 1; j <= 600; j++) {
     this.frameChart[j] = (1000 / j);
@@ -56,35 +57,35 @@ Jarallax.prototype.setProgress = function (progress, isWeak) {
     progress = 1;
   } else if (progress < 0) {
     progress = 0;
+  }else{
+    progress = Math.round(progress * 1000) / 1000;
   }
-  this.progress = progress;
-  
-  
-  
-  if (this.allowWeakProgress || !weak) {
-    this.previousTime = new Date();
-    
-    this.currentTime = new Date();
 
-    var weak = isWeak || false;
-  
-    for (var defaultValue in this.defaultValues) {
-      this.defaultValues[defaultValue].activate(this.progress);
+  if(this.progress != progress){
+    this.progress = progress;
+    if (this.allowWeakProgress || !weak) {
+      this.previousTime = new Date();
+
+      this.currentTime = new Date();
+
+      var weak = isWeak || false;
+
+      for (var defaultValue in this.defaultValues) {
+        this.defaultValues[defaultValue].activate(this.progress);
+      }
+
+      for (var animation in this.animations) {
+        this.animations[animation].activate(this.progress);
+      }
+
+      for (var controller in this.controllers) {
+        this.controllers[controller].update(this.progress);
+      }
+
+      this.currentTime = new Date();
+      this.stepSize = Math.max(this.currentTime - this.previousTime, this.stepSize);
     }
-    
-    for (var animation in this.animations) {
-      this.animations[animation].activate(this.progress);
-    }
-    
-    for (var controller in this.controllers) {
-      this.controllers[controller].update(this.progress);
-    }
-    
-    this.currentTime = new Date();
-    this.stepSize = Math.max(this.currentTime - this.previousTime, this.stepSize);
   }
-  
-  
 };
 
 Jarallax.prototype.clearAnimations = function() {
@@ -105,24 +106,28 @@ Jarallax.prototype.jumpToProgress = function (progress, time, fps) {
   } else if (progress.indexOf('%') != -1) {
     progress = parseFloat(progress) / 100;
   }
-  
+
+  if(progress == this.progress) {
+    return false;
+  }
+
   if (progress > 1) {
     progress = 1;
   } else if (progress < 0) {
     progress = 0;
   }
-  
+
   this.smoothProperties = {};
   this.smoothProperties.timeStep = 1000 / fps;
   this.smoothProperties.steps = time / this.smoothProperties.timeStep;
   this.smoothProperties.currentStep = 0;
-  
+
   this.smoothProperties.startProgress = this.progress;
   this.smoothProperties.diffProgress = progress - this.progress;
   this.smoothProperties.previousValue = this.progress;
   this.smooth();
   this.allowWeakProgress = false;
-  
+
   return false;
 };
 
@@ -133,7 +138,7 @@ Jarallax.prototype.smooth = function (externalScope) {
   } else {
     scope = externalScope;
   }
-  
+
   scope.smoothProperties.currentStep++;
   clearTimeout(scope.timer);
   if (scope.smoothProperties.currentStep < scope.smoothProperties.steps) {
@@ -143,23 +148,32 @@ Jarallax.prototype.smooth = function (externalScope) {
                                        scope.smoothProperties.diffProgress,
                                        1,
                                        5);
-    
+
+    scope.jumping_allowed = true;
     scope.setProgress(newProgress);
+    scope.jumping_allowed = false;
     scope.timer = window.setTimeout(function(){scope.smooth(scope);}, scope.smoothProperties.timeStep);
     scope.smoothProperties.previousValue = newProgress;
     scope.allowWeakProgress = false;
   } else {
-    scope.allowWeakProgress = true;
+    scope.jumping_allowed = true;
     scope.setProgress(scope.smoothProperties.startProgress + scope.smoothProperties.diffProgress);
-    delete scope.smoothProperties;
+    scope.jumping_allowed = false;
+    scope.clearSmooth(scope);
   }
+};
+
+Jarallax.prototype.clearSmooth = function(scope){
+  scope.allowWeakProgress = true;
+  clearTimeout(scope.timer);
+  delete scope.smoothProperties;
 };
 
 Jarallax.prototype.setDefault = function (selector, values) {
   if (!selector) {
     throw new Error('no selector defined.');
   }
-  
+
   if (JarallaxTools.isValues(values))
   {
     var newDefault = new JaralaxObject(selector, values);
@@ -172,7 +186,7 @@ Jarallax.prototype.addStatic = function (selector, values) {
   if (!selector) {
     throw new Error('no selector defined.');
   }
-  
+
   if (JarallaxTools.isValues(values))
   {
     var newDefault = new JarallaxStatic(selector, values[0], values[1]);
@@ -186,7 +200,7 @@ Jarallax.prototype.addCounter = function (properties) {
 
 Jarallax.prototype.addController = function (controller, activate) {
   this.controllers.push(controller);
-  
+
   if (activate) {
     controller.activate(this);
   }
@@ -200,14 +214,14 @@ Jarallax.prototype.addAnimation = function (selector, values, platforms, allMust
   } else {
     platforms = platforms || [JarallaxTools.Platform.Any];
   }
-  
+
   if (JarallaxTools.PlatformAllowed(platforms, allMustBeTrue)) {
     var newAnimation;
-    
+
     if (!selector) {
       throw new Error('no selector defined.');
     }
-    
+
     var returnValue = [];
     if (JarallaxTools.isValues(values)) {
       if (values.length) {
@@ -239,14 +253,14 @@ Jarallax.prototype.addAnimation = function (selector, values, platforms, allMust
           values.progress = '100%';
         }
         var startValues = {};
-        
+
         for (var j in values) {
           startValues[j] = $(selector).css(j);
         }
-        
+
         startValues.progress = '0%';
-        
-        
+
+
         newAnimation = new JarallaxAnimation(selector, startValues, values, this);
         this.animations.push(newAnimation);
         returnValue.push(newAnimation);
@@ -261,47 +275,48 @@ Jarallax.prototype.cloneAnimation = function (selector, adittionalValues, animat
   if (!selector) {
     throw new Error('no selector defined.');
   }
-  
+
   var newAnimations = [];
   var adittionalValuesArray = [];
-  
+
   for (var i = 0; i < animations.length + 1; i++) {
     if (adittionalValues instanceof Array) {
       adittionalValuesArray.push(adittionalValues[i]);
     } else {
-      adittionalValuesArray.push(adittionalValues);      
+      adittionalValuesArray.push(adittionalValues);
     }
   }
-  
+
   for (i = 0; i < animations.length; i++) {
     var currentAnimation = animations[i];
     var newStart = JarallaxTools.clone(currentAnimation.startValues);
     var newEnd = JarallaxTools.clone(currentAnimation.endValues);
-    
+
     var adittionalValueStart = adittionalValuesArray[i];
     var adittionalValueEnd = adittionalValuesArray[i + 1];
-    
+
     for (var j in newStart) {
       if (adittionalValueStart[j]) {
         newStart[j] = JarallaxTools.calculateNewValue(adittionalValueStart[j], newStart[j]);
       }
     }
-    
+
     for (var k in newEnd) {
       if (adittionalValueEnd[k]) {
         newEnd[k] = JarallaxTools.calculateNewValue(adittionalValueEnd[k], newEnd[k]);
       }
     }
-    
+
     newAnimations.push(this.addAnimation(selector, [newStart, newEnd])[0]);
-    
+
   }
   return newAnimations;
 };
 
 Jarallax.prototype.addImageSequence = function(container, imageName, leadingNumbers, callback){
   //TODO
-}
+  return false;
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // Jarallax static methods /////////////////////////////////////////////////////
@@ -310,7 +325,7 @@ Jarallax.EASING = {
   'linear':function (currentTime, beginningValue, changeInValue, duration, power) {
     return currentTime / duration * changeInValue + beginningValue;
   },
-  
+
   'easeOut':function (currentTime, beginningValue, changeInValue, duration, power) {
    if (power === undefined) {
     power = 2;
@@ -335,7 +350,7 @@ Jarallax.EASING = {
      currentTime = currentTime - duration;
      return ((Math.pow((duration - currentTime) / duration, power) * -1) + 1) * changeInValue + beginningValue + changeInValue;
    }
-   
+
    return Math.pow(currentTime / duration, power) * changeInValue + beginningValue;
   }
 };

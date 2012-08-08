@@ -3,16 +3,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 ControllerScroll = function(smoothing, scrollSpace) {
   this.target = $(window);
+  $(window).scrollTop(0);
   this.height = parseInt($("body").css('height'),10);
   this.scrollSpace = scrollSpace || this.height - this.target.height();
-  
+
   if (this.scrollSpace < 10) {
     this.height = parseInt($("#wrapper").css('height'),10);
     this.scrollSpace = this.height - this.target.height();
   }
-  
+
   this.smoothing = smoothing || false;
-  
+
   this.targetProgress = 0;
 };
 
@@ -30,12 +31,24 @@ ControllerScroll.prototype.deactivate = function(jarallax) {
 
 ControllerScroll.prototype.onScroll = function(event) {
   var controller = event.data.scope;
-  
+
+  if(controller.jarallax.jumping){
+    if(!controller.jarallax.jumping_allowed) {
+      controller.jarallax.clearSmooth(controller.jarallax);
+    }
+
+    //console.log('preventing default');
+    //event.preventDefault();
+    //return false;
+  }
+
+
+
   if (controller.isActive) {
     var y = event.data.y || controller.target.scrollTop();
     var progress = y/controller.scrollSpace;
-    
-    
+
+
     if(!controller.smoothing){
       controller.jarallax.setProgress(progress, true);
     } else {
@@ -54,13 +67,13 @@ ControllerScroll.prototype.smooth = function(externalScope) {
   }
 
   var oldProgress = scope.jarallax.progress;
-  
+
   var animationSpace =  scope.targetProgress - oldProgress;
   clearTimeout(scope.timer);
-  
+
   if(animationSpace > 0.0001 || animationSpace < -0.0001){
     var newProgress = oldProgress + animationSpace / 5;
-    
+
     scope.timer = window.setTimeout(function(){
         scope.smooth(scope);}, scope.jarallax.FPS_INTERVAL);
     scope.jarallax.setProgress(newProgress, true);
@@ -71,8 +84,8 @@ ControllerScroll.prototype.smooth = function(externalScope) {
 
 ControllerScroll.prototype.update = function(progress) {
   var scrollPosition = progress * this.scrollSpace;
-  
+
   if(!this.jarallax.allowWeakProgress) {
-    $('body').scrollTop(scrollPosition);
+    $(window).scrollTop(scrollPosition);
   }
 };
