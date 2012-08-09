@@ -6,7 +6,8 @@ module.exports = function(grunt) {
               'source/jarallax_counter.js',
               'source/jarallax_object.js',
               'source/jarallax_animation.js',
-              'source/controllers/*.js'] 
+              'source/controllers/*.js',
+              'import/*/*.js'] 
   
   grunt.initConfig({
     pkg: '<json:package.json>',
