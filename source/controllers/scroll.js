@@ -1,19 +1,22 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Scroll controller ///////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-ControllerScroll = function(smoothing, scrollSpace) {
+ControllerScroll = function(smoothing, horizontal, convertScroll) {
   this.target = $(window);
+  this.horizontal = horizontal;
+  this.convertScroll = convertScroll;
   $(window).scrollTop(0);
-  this.height = parseInt($("body").css('height'),10);
-  this.scrollSpace = scrollSpace || this.height - this.target.height();
-
-  if (this.scrollSpace < 10) {
-    this.height = parseInt($("#wrapper").css('height'),10);
-    this.scrollSpace = this.height - this.target.height();
+  $(window).scrollLeft(0);
+  
+  if (!horizontal) {
+    var height = parseInt($("body").css('height'),10);
+    this.scrollSpace = height - this.target.height();
+  } else {
+    var width = parseInt($("body").css('width'),10);
+    this.scrollSpace = width - this.target.width();
   }
-
+  
   this.smoothing = smoothing || false;
-
   this.targetProgress = 0;
 };
 
@@ -21,31 +24,44 @@ ControllerScroll.prototype = new JarallaxController();
 
 ControllerScroll.prototype.activate = function(jarallax) {
   JarallaxController.prototype.activate.call(this, jarallax);
+  if (this.convertScroll) {
+    scrollConverter.activate();
+  }
   this.target.bind('scroll', {scope: this} , this.onScroll);
 };
 
 ControllerScroll.prototype.deactivate = function(jarallax) {
   JarallaxController.prototype.deactivate.call(this, jarallax);
+  if (this.convertScroll) {
+    scrollConverter.deactivate();
+  }
   this.target.unbind('scroll');
 };
 
 ControllerScroll.prototype.onScroll = function(event) {
   var controller = event.data.scope;
-
+  //console.log(controller.target.scrollTop());
+  
   if(controller.jarallax.jumping){
-    if(!controller.jarallax.jumping_allowed) {
+    if(!controller.jarallax.jumpingAllowed) {
       controller.jarallax.clearSmooth(controller.jarallax);
     }
   }
 
   if (controller.isActive) {
-    var y = event.data.y || controller.target.scrollTop();
-    var progress = y/controller.scrollSpace;
-
+    var progress;
+    if (!controller.horizontal) {
+      var y = event.data.y || controller.target.scrollTop();
+      progress = y/controller.scrollSpace;
+    } else {
+      var x = event.data.x || controller.target.scrollLeft();
+      progress = x/controller.scrollSpace;
+    }
+    
     if(!controller.smoothing){
       controller.jarallax.setProgress(progress, true);
     } else {
-      controller.targetProgress = progress;
+      controller.targetProgress = Math.min(progress, 1);
       controller.smooth();
     }
   }
@@ -60,7 +76,6 @@ ControllerScroll.prototype.smooth = function(externalScope) {
   }
 
   var oldProgress = scope.jarallax.progress;
-
   var animationSpace =  scope.targetProgress - oldProgress;
   clearTimeout(scope.timer);
 
@@ -79,6 +94,10 @@ ControllerScroll.prototype.update = function(progress) {
   var scrollPosition = progress * this.scrollSpace;
 
   if(!this.jarallax.allowWeakProgress) {
-    $(window).scrollTop(scrollPosition);
+    if (!controller.horizontal) {
+      $(window).scrollTop(scrollPosition);
+    } else {
+      $(window).scrollLeft(scrollPosition);
+    }
   }
 };

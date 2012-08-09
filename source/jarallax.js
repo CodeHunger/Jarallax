@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // jarallax class //////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-var Jarallax = function (controller) {
+var Jarallax = function () {
   this.FPS = 24;
   this.FPS_INTERVAL = 1000 / this.FPS;
   this.FRAME_DATA_SAMPLE = 24;
@@ -11,7 +11,8 @@ var Jarallax = function (controller) {
   this.animations = [];
   this.defaultValues = [];
   this.progress = 0.0;
-  this.prev_progress = 0.0;
+  this.properties = {};
+  this.prevProgress = 0.0;
   this.controllers = [];
   this.maxProgress = 1;
   this.timer = undefined;
@@ -19,24 +20,28 @@ var Jarallax = function (controller) {
   this.frameRate = this.FPS;
   this.stepSize = 0;
   this.jumping = false;
-
-  if (controller === undefined) {
-    if($.browser.iDevice){
+  
+  for(var argument in arguments) {
+    if (arguments[argument] instanceof Array){
+      this.controllers = arguments[argument];
+    } else if (arguments[argument].isController) {
+      this.controllers.push(arguments[argument]);
+    } else if (arguments[argument] instanceof Object) {
+      this.properties = arguments[argument];
+    } else {
+      console.log('WARNING: bad argument ' + argument);
+    }
+  }
+  
+  if (!this.controller) {
+    if($.browser.iDevice) {
       this.controllers.push(new ControllerApple(false));
     } else if ($.browser.mozilla) {
-      this.controllers.push(new ControllerScroll(false));
+      this.controllers.push(new ControllerScroll(false,
+          this.properties.horizontal, this.properties.disableVertical));
     } else {
-      this.controllers.push(new ControllerScroll(true));
-    }
-  } else if (controller !== 'none') {
-    if (controller.length) {
-      this.controllers = controller;
-    } else if (typeof (controller) === 'object') {
-      this.controllers.push(controller);
-    } else {
-      throw new Error('wrong controller data type: "' +
-                      typeof (controller) +
-                      '". Expected "object" or "array"');
+      this.controllers.push(new ControllerScroll(true,
+          this.properties.horizontal, this.properties.disableVertical));
     }
   }
 
@@ -58,13 +63,14 @@ Jarallax.prototype.setProgress = function (progress, isWeak) {
     progress = 1;
   } else if (progress < 0) {
     progress = 0;
-  }else{
-    progress = Math.round(progress * 1000) / 1000;
   }
+  
+  console.log(progress);
 
   if(this.progress != progress){
     this.progress = progress;
     if (this.allowWeakProgress || !weak) {
+      
       this.previousTime = new Date();
       this.currentTime = new Date();
       var weak = isWeak || false;
@@ -148,16 +154,16 @@ Jarallax.prototype.smooth = function (externalScope) {
                                        1,
                                        5);
 
-    scope.jumping_allowed = true;
+    scope.jumpingAllowed = true;
     scope.setProgress(newProgress);
-    scope.jumping_allowed = false;
+    scope.jumpingAllowed = false;
     scope.timer = window.setTimeout(function(){scope.smooth(scope);}, scope.smoothProperties.timeStep);
     scope.smoothProperties.previousValue = newProgress;
     scope.allowWeakProgress = false;
   } else {
-    scope.jumping_allowed = true;
+    scope.jumpingAllowed = true;
     scope.setProgress(scope.smoothProperties.startProgress + scope.smoothProperties.diffProgress);
-    scope.jumping_allowed = false;
+    scope.jumpingAllowed = false;
     scope.clearSmooth(scope);
   }
 };

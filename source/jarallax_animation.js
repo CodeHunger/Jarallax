@@ -71,48 +71,48 @@ JarallaxAnimation.prototype.activate = function (progress) {
   }
 };
 
-JarallaxAnimation.prototype.dispatchEvent = function(progress_old, progress_new, 
+JarallaxAnimation.prototype.dispatchEvent = function(progressOld, progressNew, 
     start, end) {
   var events = this.startValues.event;
-  var event_data = {};
-  event_data.animation = this;
-  event_data.selector = this.selector;
+  var eventData = {};
+  eventData.animation = this;
+  eventData.selector = this.selector;
   
-  if (progress_new >= start && progress_new <= end ) {
-    if (events.start && progress_old < start) {
-      event_data.type = 'start';
-      events.start(event_data);
+  if (progressNew >= start && progressNew <= end ) {
+    if (events.start && progressOld < start) {
+      eventData.type = 'start';
+      events.start(eventData);
     }
     
-    if (events.start && progress_old > end) {
-      event_data.type = 'rewind';
-      events.start(event_data);
+    if (events.start && progressOld > end) {
+      eventData.type = 'rewind';
+      events.start(eventData);
     }
     
     if (events.animating) {
-      event_data.type = 'animating';
-      events.animating(event_data);
+      eventData.type = 'animating';
+      events.animating(eventData);
     } 
     
-    if (events.forward && progress_old < progress_new) {
-      event_data.type = 'forward';
-      events.forward(event_data);
+    if (events.forward && progressOld < progressNew) {
+      eventData.type = 'forward';
+      events.forward(eventData);
     }
     
-    if (events.reverse && progress_old > progress_new) {
-      event_data.type = 'reverse';
-      events.reverse(event_data);
+    if (events.reverse && progressOld > progressNew) {
+      eventData.type = 'reverse';
+      events.reverse(eventData);
     }
     
   } else {
-    if (events.complete && progress_old < end && progress_new > end) {
-      event_data.type = 'complete';
-      events.complete(event_data);
+    if (events.complete && progressOld < end && progressNew > end) {
+      eventData.type = 'complete';
+      events.complete(eventData);
     }
     
-    if (events.rewinded && progress_old > start && progress_new < start) {
-      event_data.type = 'rewind';
-      events.rewinded(event_data);
+    if (events.rewinded && progressOld > start && progressNew < start) {
+      eventData.type = 'rewind';
+      events.rewinded(eventData);
     }
   }
 };

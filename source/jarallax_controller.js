@@ -4,6 +4,7 @@
 JarallaxController = function() {
   this.isActive = false;
   this.bindings = [];
+  this.isController = true;
 };
 
 
